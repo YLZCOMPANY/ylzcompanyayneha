@@ -1,102 +1,534 @@
 <!doctype html>
-<html lang="fa">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>دستیار شما | YLZ Company</title>
+<html lang="fa" dir="rtl" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>کاتالوگ آینه‌های خودرو</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { margin:0; font-family: Tahoma, sans-serif; direction: rtl; background:#faf8f3; height:100vh; }
-    #chat-btn {
-      position: fixed; bottom: 20px; right: 20px;
-      background: linear-gradient(135deg, #d4af37, #f5d76e);
-      color: white; border: none; border-radius: 50%;
-      width: 60px; height: 60px; font-size: 24px; cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    body {
+      box-sizing: border-box;
     }
-    #chat-box {
-      position: fixed; bottom: 90px; right: 20px;
-      width: 300px; height: 400px; background: white;
-      border: 2px solid #d4af37; border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-      display: none; flex-direction: column; overflow: hidden;
-      animation: fadeIn .3s ease;
+    
+    .mirror-card {
+      transition: transform 0.3s, box-shadow 0.3s;
     }
-    @keyframes fadeIn { from {opacity:0; transform:translateY(20px);} to {opacity:1; transform:translateY(0);} }
-    .chat-header {
-      background: linear-gradient(135deg, #d4af37, #f5d76e);
-      color: white; padding: 10px; text-align: center; font-weight: bold;
+    
+    .mirror-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 30px rgba(212, 175, 55, 0.3);
     }
-    .chat-messages {
-      flex: 1; padding: 10px; overflow-y: auto;
-      display: flex; flex-direction: column; gap: 8px;
-      background:#fffef7;
+    
+    .filter-btn {
+      transition: all 0.3s;
     }
-    .msg { padding: 8px 10px; border-radius: 10px; max-width: 80%; line-height:1.4; }
-    .user { align-self: flex-start; background: #f9e79f; }
-    .bot { align-self: flex-end; background: #fdf2d0; border: 1px solid #d4af37; }
-    .chat-input { display: flex; border-top: 1px solid #ddd; }
-    .chat-input input {
-      flex:1; border:none; padding:10px; outline:none; font-family:inherit;
+    
+    .favorite-icon {
+      transition: transform 0.2s;
     }
-    .chat-input button {
-      background: #d4af37; border:none; color:white; padding:0 15px; cursor:pointer;
+    
+    .favorite-icon:hover {
+      transform: scale(1.2);
     }
-    .bot a {
-      color: #a67c00;
-      text-decoration: none;
-      font-weight: bold;
+
+    .gold-shine {
+      background: linear-gradient(135deg, #d4af37 0%, #ffd700 50%, #d4af37 100%);
+      background-size: 200% 200%;
+      animation: shine 3s ease infinite;
+    }
+
+    @keyframes shine {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
     }
   </style>
-</head>
-<body>
-
-  <button id="chat-btn">💬</button>
-
-  <div id="chat-box">
-    <div class="chat-header">دستیار شما</div>
-    <div class="chat-messages" id="messages"></div>
-    <div class="chat-input">
-      <input type="text" id="input" placeholder="پیام خود را بنویسید..." />
-      <button id="send">ارسال</button>
-    </div>
-  </div>
-
+  <style>@view-transition { navigation: auto; }</style>
+ </head>
+ <body class="h-full">
+  <div id="app" class="h-full w-full overflow-auto"></div>
   <script>
-    const chatBtn = document.getElementById('chat-btn');
-    const chatBox = document.getElementById('chat-box');
-    const messages = document.getElementById('messages');
-    const input = document.getElementById('input');
-    const sendBtn = document.getElementById('send');
+    const defaultConfig = {
+      background_color: "#1a1a1a",
+      card_color: "#2d2d2d",
+      text_color: "#f5f5f5",
+      primary_action_color: "#d4af37",
+      secondary_action_color: "#ffd700",
+      font_family: "Vazirmatn",
+      font_size: 16,
+      catalog_title: "کاتالوگ آینه‌های خودرو",
+      filter_label: "دسته‌بندی",
+      favorite_label: "علاقه‌مندی‌ها",
+      footer_text: "تولید و طراحی توسط شرکت YLZ"
+    };
 
-    chatBtn.addEventListener('click', () => {
-      chatBox.style.display = chatBox.style.display === 'flex' ? 'none' : 'flex';
-    });
+    const referenceMirrors = [
+      {
+        id: "JACJ4",
+        name: "JACJ4",
+        category: "تاشو",
+        carModel: "JAC J4",
+        description: "آینه تاشو برقی مناسب برای خودروی JAC J4",
+        imageUrl: "https://raw.githubusercontent.com/YLZCOMPANY/ayneyj4/39381bb7db4198cf54ed2e9c6364c6c7f2f11ff1/%D8%A2%DB%8C%D9%86%D9%87%20J4.png"
+      },
+      {
+        id: "KMCT8",
+        name: "KMCT8",
+        category: "برقی",
+        carModel: "KMC T8",
+        description: "آینه برقی با قابلیت تنظیم از داخل خودرو",
+        imageUrl: "https://raw.githubusercontent.com/YLZCOMPANY/ayne-kmct8/0c8ef840b8e586c6cfba1724454f5f94f37c736c/t8.png"
+      },
+      {
+        id: "SAINA-QUIK",
+        name: "SAINA/QUIK",
+        category: "خودرو",
+        carModel: "Saina / Quick",
+        description: "آینه استاندارد مناسب برای ساینا و کوییک",
+        imageUrl: "https://raw.githubusercontent.com/YLZCOMPANY/sainaquik/4b391db55c2d6c4af9a9f228918031a27db1649f/%D8%A7%DB%8C%D9%86%D9%87%20%D8%B3%D8%A7%DB%8C%D9%86%D8%A7%D8%A7%D8%A7.png"
+      },
+      {
+        id: "CERATO",
+        name: "CERATO",
+        category: "برقی",
+        carModel: "Kia Cerato",
+        description: "آینه برقی تاشو مدل سراتو",
+        imageUrl: "aynej4.png"
+      },
+      {
+        id: "BRILLIANCE",
+        name: "BRILLIANCE",
+        category: "تاشو",
+        carModel: "Brilliance",
+        description: "آینه تاشو برقی برلیانس با کیفیت بالا",
+        imageUrl: "https://raw.githubusercontent.com/YLZCOMPANY/aynekhodro-breliance/12eae85c7cc116cec597dace4121feca56b7151f/%D8%A2%DB%8C%DB%8C%D9%86%D9%87%20%D8%A8%D8%B1%D9%84%DB%8C%D8%A7%D9%86%D8%B3.png"
+      },
+      {
+        id: "JACS3",
+        name: "JACS3",
+        category: "خودرو",
+        carModel: "JAC S3",
+        description: "آینه خودرو استاندارد JAC S3",
+        imageUrl: "https://raw.githubusercontent.com/YLZCOMPANY/jacs3/95d3d3d3650229d5e1b0b046ab06f0f24b4e5eca/%D8%A2%DB%8C%D9%86%D9%87%20S3.png"
+      }
+    ];
 
-    function appendMessage(text, who='bot', asHtml=false) {
-      const div = document.createElement('div');
-      div.className = 'msg ' + who;
-      if (asHtml) div.innerHTML = text; else div.textContent = text;
-      messages.appendChild(div);
-      messages.scrollTop = messages.scrollHeight;
+    let userFavorites = new Map();
+    let currentFilter = "همه";
+    let searchQuery = "";
+
+    const dataHandler = {
+      onDataChanged(data) {
+        userFavorites.clear();
+        data.forEach(record => {
+          userFavorites.set(record.mirror_id, {
+            favorite: record.favorite,
+            notes: record.notes,
+            addedDate: record.added_date,
+            __backendId: record.__backendId
+          });
+        });
+        renderApp();
+      }
+    };
+
+    async function initializeApp() {
+      const initResult = await window.dataSdk.init(dataHandler);
+      if (!initResult.isOk) {
+        console.error("Failed to initialize data SDK");
+        return;
+      }
+      
+      await window.elementSdk.init({
+        defaultConfig,
+        onConfigChange: async (config) => {
+          renderApp();
+        },
+        mapToCapabilities: (config) => ({
+          recolorables: [
+            {
+              get: () => config.background_color || defaultConfig.background_color,
+              set: (value) => {
+                config.background_color = value;
+                window.elementSdk.setConfig({ background_color: value });
+              }
+            },
+            {
+              get: () => config.card_color || defaultConfig.card_color,
+              set: (value) => {
+                config.card_color = value;
+                window.elementSdk.setConfig({ card_color: value });
+              }
+            },
+            {
+              get: () => config.text_color || defaultConfig.text_color,
+              set: (value) => {
+                config.text_color = value;
+                window.elementSdk.setConfig({ text_color: value });
+              }
+            },
+            {
+              get: () => config.primary_action_color || defaultConfig.primary_action_color,
+              set: (value) => {
+                config.primary_action_color = value;
+                window.elementSdk.setConfig({ primary_action_color: value });
+              }
+            },
+            {
+              get: () => config.secondary_action_color || defaultConfig.secondary_action_color,
+              set: (value) => {
+                config.secondary_action_color = value;
+                window.elementSdk.setConfig({ secondary_action_color: value });
+              }
+            }
+          ],
+          borderables: [],
+          fontEditable: {
+            get: () => config.font_family || defaultConfig.font_family,
+            set: (value) => {
+              config.font_family = value;
+              window.elementSdk.setConfig({ font_family: value });
+            }
+          },
+          fontSizeable: {
+            get: () => config.font_size || defaultConfig.font_size,
+            set: (value) => {
+              config.font_size = value;
+              window.elementSdk.setConfig({ font_size: value });
+            }
+          }
+        }),
+        mapToEditPanelValues: (config) => new Map([
+          ["catalog_title", config.catalog_title || defaultConfig.catalog_title],
+          ["filter_label", config.filter_label || defaultConfig.filter_label],
+          ["favorite_label", config.favorite_label || defaultConfig.favorite_label],
+          ["footer_text", config.footer_text || defaultConfig.footer_text]
+        ])
+      });
+
+      renderApp();
     }
 
-    function botReply() {
-      return 'از پیام شما سپاس‌گزاریم 🙏<br>جهت دریافت مشاوره و مشاهده‌ی محصولات، لطفاً به پیج رسمی اینستاگرام YLZ Company مراجعه کنید:<br><a href="https://www.instagram.com/ylzcompany.ir" target="_blank">instagram.com/ylzcompany.ir</a>';
+    function getMirrorImage(mirror, primaryColor) {
+      if (mirror.imageUrl) {
+        return `<img 
+          src="${mirror.imageUrl}" 
+          alt="${mirror.name}" 
+          style="width: 100%; height: 100%; object-fit: contain; padding: 0.5rem;"
+          onerror="this.style.display='none'; this.parentElement.innerHTML += '<svg width=\\'80\\' height=\\'80\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'${primaryColor}\\' stroke-width=\\'1.5\\'><ellipse cx=\\'12\\' cy=\\'12\\' rx=\\'8\\' ry=\\'10\\' /><path d=\\'M12 2 L12 22\\' /><ellipse cx=\\'12\\' cy=\\'12\\' rx=\\'6\\' ry=\\'8\\' opacity=\\'0.3\\' fill=\\'${primaryColor}\\' /></svg>';"
+        />`;
+      } else {
+        return `<svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="${primaryColor}" stroke-width="1.5">
+          <ellipse cx="12" cy="12" rx="8" ry="10" />
+          <path d="M12 2 L12 22" />
+          <ellipse cx="12" cy="12" rx="6" ry="8" opacity="0.3" fill="${primaryColor}" />
+        </svg>`;
+      }
     }
 
-    function send() {
-      const text = input.value.trim();
-      if (!text) return;
-      appendMessage(text, 'user');
-      input.value = '';
-      setTimeout(() => appendMessage(botReply(), 'bot', true), 400);
+    function renderApp() {
+      const config = window.elementSdk?.config || defaultConfig;
+      const app = document.getElementById('app');
+      
+      const customFont = config.font_family || defaultConfig.font_family;
+      const baseSize = config.font_size || defaultConfig.font_size;
+      const baseFontStack = 'Tahoma, Arial, sans-serif';
+      
+      const backgroundColor = config.background_color || defaultConfig.background_color;
+      const cardColor = config.card_color || defaultConfig.card_color;
+      const textColor = config.text_color || defaultConfig.text_color;
+      const primaryColor = config.primary_action_color || defaultConfig.primary_action_color;
+      const secondaryColor = config.secondary_action_color || defaultConfig.secondary_action_color;
+      const catalogTitle = config.catalog_title || defaultConfig.catalog_title;
+      const filterLabel = config.filter_label || defaultConfig.filter_label;
+      const favoriteLabel = config.favorite_label || defaultConfig.favorite_label;
+      const footerText = config.footer_text || defaultConfig.footer_text;
+
+      const categories = ["همه", "تاشو", "برقی", "خودرو"];
+      
+      const filteredMirrors = referenceMirrors.filter(mirror => {
+        const matchesFilter = currentFilter === "همه" || mirror.category === currentFilter;
+        const matchesSearch = searchQuery === "" || 
+          mirror.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          mirror.carModel.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesFilter && matchesSearch;
+      });
+
+      const favoriteCount = Array.from(userFavorites.values()).filter(f => f.favorite).length;
+      
+      app.innerHTML = `
+        <div style="background-color: ${backgroundColor}; font-family: ${customFont}, ${baseFontStack}; color: ${textColor}; min-height: 100%; padding: 2rem;">
+          <div style="max-width: 80rem; margin: 0 auto;">
+            
+            <!-- Header -->
+            <div style="text-align: center; margin-bottom: 2rem;">
+              <h1 style="font-size: ${baseSize * 2}px; font-weight: 700; margin-bottom: 0.5rem; color: ${primaryColor}; text-shadow: 0 0 20px ${primaryColor}80;"> ${catalogTitle}</h1>
+              <p style="font-size: ${baseSize}px; opacity: 0.7;">${referenceMirrors.length} مدل آینه در دسترس</p>
+            </div>
+
+            <!-- Search Bar -->
+            <div style="margin-bottom: 2rem;">
+              <input 
+                type="text" 
+                id="searchInput"
+                placeholder="جست‌وجوی آینه..." 
+                value="${searchQuery}"
+                style="width: 100%; padding: 1rem; border-radius: 0.5rem; border: 2px solid ${primaryColor}; background-color: ${cardColor}; color: ${textColor}; font-size: ${baseSize}px; font-family: ${customFont}, ${baseFontStack}; outline: none;"
+              />
+            </div>
+
+            <!-- Filter Buttons -->
+            <div style="margin-bottom: 2rem;">
+              <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+                <span style="font-size: ${baseSize * 0.875}px; font-weight: 600; margin-left: 0.5rem; color: ${primaryColor};">${filterLabel}:</span>
+                ${categories.map(cat => `
+                  <button 
+                    class="filter-btn" 
+                    data-category="${cat}"
+                    style="padding: 0.5rem 1.25rem; border-radius: 9999px; border: 2px solid ${primaryColor}; background-color: ${currentFilter === cat ? primaryColor : 'transparent'}; color: ${currentFilter === cat ? backgroundColor : primaryColor}; font-size: ${baseSize * 0.875}px; font-weight: 600; cursor: pointer; font-family: ${customFont}, ${baseFontStack};"
+                  >
+                    ${cat}
+                  </button>
+                `).join('')}
+                <button 
+                  class="filter-btn" 
+                  id="favoritesFilter"
+                  style="padding: 0.5rem 1.25rem; border-radius: 9999px; border: 2px solid ${secondaryColor}; background-color: ${currentFilter === 'favorites' ? secondaryColor : 'transparent'}; color: ${currentFilter === 'favorites' ? backgroundColor : secondaryColor}; font-size: ${baseSize * 0.875}px; font-weight: 600; cursor: pointer; margin-right: auto; font-family: ${customFont}, ${baseFontStack};"
+                >
+                  ❤️ ${favoriteLabel} (${favoriteCount})
+                </button>
+              </div>
+            </div>
+
+            <!-- Mirrors Grid -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem;">
+              ${filteredMirrors.length === 0 ? `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background-color: ${cardColor}; border-radius: 0.5rem; border: 2px solid ${primaryColor}40;">
+                  <p style="font-size: ${baseSize * 1.25}px; opacity: 0.6;">آینه‌ای یافت نشد</p>
+                </div>
+              ` : filteredMirrors.map(mirror => {
+                const favoriteData = userFavorites.get(mirror.id) || { favorite: false };
+                const isFavorite = favoriteData.favorite;
+                
+                return `
+                  <div class="mirror-card" style="background-color: ${cardColor}; border-radius: 0.75rem; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.3); border: 2px solid ${isFavorite ? secondaryColor : primaryColor}40;">
+                    
+                    <!-- Mirror Image -->
+                    <div style="background: linear-gradient(135deg, ${primaryColor}20, ${secondaryColor}20); height: 180px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+                      ${getMirrorImage(mirror, primaryColor)}
+                      
+                      <!-- Favorite Icon -->
+                      <button 
+                        class="favorite-icon" 
+                        data-mirror-id="${mirror.id}"
+                        style="position: absolute; top: 0.75rem; left: 0.75rem; background-color: ${cardColor}; border: 2px solid ${primaryColor}; border-radius: 50%; width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"
+                      >
+                        <span style="font-size: ${baseSize * 1.25}px;">${isFavorite ? '❤️' : '🤍'}</span>
+                      </button>
+                    </div>
+
+                    <!-- Mirror Info -->
+                    <div style="padding: 1.25rem;">
+                      <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                        <h3 style="font-size: ${baseSize * 1.25}px; font-weight: 700; color: ${primaryColor};">${mirror.name}</h3>
+                        <span style="background: linear-gradient(135deg, ${primaryColor}, ${secondaryColor}); color: ${backgroundColor}; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: ${baseSize * 0.75}px; font-weight: 600;">${mirror.category}</span>
+                      </div>
+                      
+                      <p style="font-size: ${baseSize * 0.875}px; color: ${textColor}; opacity: 0.8; margin-bottom: 0.75rem;">🚗 ${mirror.carModel}</p>
+                      
+                      <p style="font-size: ${baseSize * 0.875}px; color: ${textColor}; opacity: 0.7; line-height: 1.5; margin-bottom: 1rem;">${mirror.description}</p>
+                      
+                      <!-- Footer Ad -->
+                      <div style="padding-top: 1rem; border-top: 2px solid ${primaryColor}40;">
+                        <p style="font-size: ${baseSize * 0.75}px; color: ${primaryColor}; text-align: center; font-weight: 700; letter-spacing: 0.5px;">✨ ${footerText} ✨</p>
+                      </div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+
+          </div>
+        </div>
+      `;
+
+      // Attach event listeners
+      document.getElementById('searchInput').addEventListener('input', (e) => {
+        searchQuery = e.target.value;
+        renderApp();
+      });
+
+      document.querySelectorAll('.filter-btn[data-category]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          currentFilter = btn.dataset.category;
+          renderApp();
+        });
+      });
+
+      document.getElementById('favoritesFilter').addEventListener('click', () => {
+        if (currentFilter === 'favorites') {
+          currentFilter = 'همه';
+        } else {
+          currentFilter = 'favorites';
+        }
+        renderApp();
+      });
+
+      // Update filtered mirrors for favorites
+      if (currentFilter === 'favorites') {
+        const favoriteMirrors = referenceMirrors.filter(mirror => {
+          const favoriteData = userFavorites.get(mirror.id);
+          return favoriteData && favoriteData.favorite;
+        });
+        
+        if (favoriteMirrors.length !== filteredMirrors.length) {
+          renderFavoritesOnly();
+        }
+      }
+
+      document.querySelectorAll('.favorite-icon').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const mirrorId = btn.dataset.mirrorId;
+          await toggleFavorite(mirrorId);
+        });
+      });
     }
 
-    sendBtn.addEventListener('click', send);
-    input.addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
+    function renderFavoritesOnly() {
+      const config = window.elementSdk?.config || defaultConfig;
+      const favoriteMirrors = referenceMirrors.filter(mirror => {
+        const favoriteData = userFavorites.get(mirror.id);
+        return favoriteData && favoriteData.favorite;
+      });
 
-    appendMessage('سلام و خوش آمدید به گروه صنعتی YLZ Company!<br>ما اینجاییم تا بهتون کمک کنیم بهترین آپشن‌های خودرو را با بهترین کیفیت انتخاب کنید 🚗✨','bot',true);
-    setTimeout(() => appendMessage('چطور می‌تونم کمکتون کنم؟','bot'), 3000);
+      const gridContainer = document.querySelector('[style*="grid-template-columns"]');
+      if (!gridContainer) return;
+
+      const backgroundColor = config.background_color || defaultConfig.background_color;
+      const cardColor = config.card_color || defaultConfig.card_color;
+      const textColor = config.text_color || defaultConfig.text_color;
+      const primaryColor = config.primary_action_color || defaultConfig.primary_action_color;
+      const secondaryColor = config.secondary_action_color || defaultConfig.secondary_action_color;
+      const baseSize = config.font_size || defaultConfig.font_size;
+      const customFont = config.font_family || defaultConfig.font_family;
+      const baseFontStack = 'Tahoma, Arial, sans-serif';
+      const footerText = config.footer_text || defaultConfig.footer_text;
+
+      gridContainer.innerHTML = favoriteMirrors.length === 0 ? `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background-color: ${cardColor}; border-radius: 0.5rem; border: 2px solid ${primaryColor}40;">
+          <p style="font-size: ${baseSize * 1.25}px; opacity: 0.6;">هنوز آینه‌ای به علاقه‌مندی‌ها اضافه نشده</p>
+        </div>
+      ` : favoriteMirrors.map(mirror => {
+        const favoriteData = userFavorites.get(mirror.id) || { favorite: false };
+        const isFavorite = favoriteData.favorite;
+        
+        return `
+          <div class="mirror-card" style="background-color: ${cardColor}; border-radius: 0.75rem; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.3); border: 2px solid ${isFavorite ? secondaryColor : primaryColor}40;">
+            
+            <div style="background: linear-gradient(135deg, ${primaryColor}20, ${secondaryColor}20); height: 180px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+              ${getMirrorImage(mirror, primaryColor)}
+              
+              <button 
+                class="favorite-icon" 
+                data-mirror-id="${mirror.id}"
+                style="position: absolute; top: 0.75rem; left: 0.75rem; background-color: ${cardColor}; border: 2px solid ${primaryColor}; border-radius: 50%; width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"
+              >
+                <span style="font-size: ${baseSize * 1.25}px;">${isFavorite ? '❤️' : '🤍'}</span>
+              </button>
+            </div>
+
+            <div style="padding: 1.25rem;">
+              <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                <h3 style="font-size: ${baseSize * 1.25}px; font-weight: 700; color: ${primaryColor};">${mirror.name}</h3>
+                <span style="background: linear-gradient(135deg, ${primaryColor}, ${secondaryColor}); color: ${backgroundColor}; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: ${baseSize * 0.75}px; font-weight: 600;">${mirror.category}</span>
+              </div>
+              
+              <p style="font-size: ${baseSize * 0.875}px; color: ${textColor}; opacity: 0.8; margin-bottom: 0.75rem;">🚗 ${mirror.carModel}</p>
+              
+              <p style="font-size: ${baseSize * 0.875}px; color: ${textColor}; opacity: 0.7; line-height: 1.5; margin-bottom: 1rem;">${mirror.description}</p>
+              
+              <!-- Footer Ad -->
+              <div style="padding-top: 1rem; border-top: 2px solid ${primaryColor}40;">
+                <p style="font-size: ${baseSize * 0.75}px; color: ${primaryColor}; text-align: center; font-weight: 700; letter-spacing: 0.5px;">✨ ${footerText} ✨</p>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.querySelectorAll('.favorite-icon').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const mirrorId = btn.dataset.mirrorId;
+          await toggleFavorite(mirrorId);
+        });
+      });
+    }
+
+    async function toggleFavorite(mirrorId) {
+      const existingFavorite = userFavorites.get(mirrorId);
+
+      if (existingFavorite && existingFavorite.__backendId) {
+        const result = await window.dataSdk.update({
+          __backendId: existingFavorite.__backendId,
+          mirror_id: mirrorId,
+          favorite: !existingFavorite.favorite,
+          notes: existingFavorite.notes || "",
+          added_date: existingFavorite.addedDate || new Date().toISOString()
+        });
+        
+        if (!result.isOk) {
+          showToast("خطا در به‌روزرسانی", "error");
+        }
+      } else {
+        const result = await window.dataSdk.create({
+          mirror_id: mirrorId,
+          favorite: true,
+          notes: "",
+          added_date: new Date().toISOString()
+        });
+        
+        if (!result.isOk) {
+          showToast("خطا در ذخیره‌سازی", "error");
+        }
+      }
+    }
+
+    function showToast(message, type) {
+      const config = window.elementSdk?.config || defaultConfig;
+      const baseSize = config.font_size || defaultConfig.font_size;
+      const primaryColor = config.primary_action_color || defaultConfig.primary_action_color;
+      const bgColor = type === "error" ? "#ef4444" : primaryColor;
+      
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed;
+        top: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: ${bgColor};
+        color: #1a1a1a;
+        padding: 1rem 2rem;
+        border-radius: 0.5rem;
+        font-size: ${baseSize}px;
+        font-weight: 700;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        border: 2px solid ${bgColor};
+      `;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s';
+        setTimeout(() => toast.remove(), 300);
+      }, 2000);
+    }
+
+    initializeApp();
   </script>
-</body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9adc793563dfae0b',t:'MTc2NTcwMjQzNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
